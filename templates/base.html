@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
@@ -11,30 +12,89 @@
 
     <style>
 
-        body{
-            background-color:#fffaf4;
+        :root{
+            --pizia-blue:#1453b8;
+            --pizia-blue-dark:#0e3f91;
+            --pizia-pink:#f2a8ca;
+            --pizia-pink-dark:#d95796;
+            --pizia-pink-light:#fff0f7;
+            --pizia-page:#f4f7ff;
         }
 
-        .navbar{background-color:#8f2d20!important;}
-        .btn-success{background-color:#287a45;border-color:#287a45;}
-        .card-custom{background:#fffdf9;}
+        body{
+            background-color:var(--pizia-page);
+            color:#24324b;
+        }
+
+        .navbar{background-color:var(--pizia-blue)!important;}
 
         .navbar-brand{
+            display:flex;
+            align-items:center;
+            gap:.65rem;
+            color:#fff!important;
+        }
+
+        .brand-logo{
+            width:52px;
+            height:52px;
+            object-fit:cover;
+            object-position:center;
+            border:2px solid var(--pizia-pink);
+            border-radius:50%;
+            background:#fff;
+            padding:2px;
+        }
+
+        .navbar .nav-link{color:#fff;transition:color .15s ease-in-out;}
+        .navbar .nav-link:hover,.navbar .nav-link:focus{color:var(--pizia-pink);}
+        .navbar-toggler{border-color:var(--pizia-pink);}
+
+        .btn-success,.btn-primary{
+            background-color:var(--pizia-blue);
+            border-color:var(--pizia-blue);
+        }
+
+        .btn-success:hover,.btn-primary:hover{
+            background-color:var(--pizia-pink-dark);
+            border-color:var(--pizia-pink-dark);
+        }
+
+        .btn-warning{
+            color:var(--pizia-blue-dark);
+            background-color:var(--pizia-pink);
+            border-color:var(--pizia-pink);
+        }
+
+        .btn-warning:hover{
+            color:#fff;
+            background-color:var(--pizia-pink-dark);
+            border-color:var(--pizia-pink-dark);
+        }
+
+        .table-dark{
+            --bs-table-bg:var(--pizia-blue-dark);
+            --bs-table-color:#fff;
+            --bs-table-border-color:#315fa4;
+        }
+
+        .navbar-brand span{
             font-weight:bold;
             font-size:1.5rem;
         }
 
         .card-custom{
+            background:#fff;
             border:none;
             border-radius:15px;
-            box-shadow:0 2px 10px rgba(0,0,0,.1);
+            box-shadow:0 2px 12px rgba(20,83,184,.10);
         }
 
         footer{
             margin-top:50px;
             padding:20px;
             text-align:center;
-            color:gray;
+            color:#64748b;
         }
 
     </style>
@@ -43,12 +103,13 @@
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark">
 
     <div class="container">
 
         <a class="navbar-brand" href="/">
-            🍕 PizIA
+            <img class="brand-logo" src="{% static 'img/pizia-logo.png' %}" alt="Logotipo de PizIA">
+            <span>PizIA</span>
         </a>
 
         <button class="navbar-toggler"
