@@ -1,17 +1,115 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models.deletion import ProtectedError
+from django.db.models import Sum
+from django.db import transaction
 
 from django.core.paginator import Paginator
 
-from .models import Cliente, Ingrediente, Pago, Pedido, Pizza
-from .forms import ClienteForm, IngredienteForm, PagoForm, PedidoForm, PizzaForm
+from .models import Cliente, DetallePedido, Ingrediente, Pago, Pedido, Pizza
+from .forms import (
+    ClienteForm, IngredienteForm, PagoForm, PedidoForm, PedidoPublicoForm,
+    PizzaForm, RastrearPedidoForm,
+)
+from .recomendador import recomendar_pizzas
 
 
 def inicio(request):
-    return redirect('lista_clientes')
+    if request.method == 'POST':
+        form = PedidoPublicoForm(request.POST)
+        if form.is_valid():
+            seleccionadas = list(form.cleaned_data['pizzas'])
+            with transaction.atomic():
+                cliente, _ = Cliente.objects.get_or_create(
+                    email=form.cleaned_data['email'],
+                    defaults={'nombre': form.cleaned_data['nombre']},
+                )
+                pedido = Pedido.objects.create(
+                    cliente=cliente,
+                    pizza=seleccionadas[0],
+                    metodo_pago_preferido=form.cleaned_data['metodo_pago_preferido'],
+                )
+                DetallePedido.objects.bulk_create([
+                    DetallePedido(
+                        pedido=pedido,
+                        pizza=pizza,
+                        cantidad=form.cleaned_data['cantidades'][pizza.pk],
+                        precio_unitario=pizza.precio,
+                    )
+                    for pizza in seleccionadas
+                ])
+            request.session['pedido_publico_id'] = pedido.pk
+            return redirect('pedido_publico_confirmado')
+    else:
+        form = PedidoPublicoForm()
+
+    pizzas = form.fields['pizzas'].queryset
+    selected_pizza_ids = {
+        str(pizza_id) for pizza_id in (form['pizzas'].value() or [])
+    } if form.is_bound else set()
+    return render(request, 'publico/inicio.html', {
+        'form': form,
+        'pizzas': pizzas,
+        'selected_pizza_ids': selected_pizza_ids,
+    })
+
+
+def pedido_publico_confirmado(request):
+    pedido_id = request.session.pop('pedido_publico_id', None)
+    if not pedido_id:
+        return redirect('inicio')
+    pedido = get_object_or_404(
+        Pedido.objects.select_related('cliente').prefetch_related('detalles__pizza'),
+        pk=pedido_id,
+    )
+    return render(request, 'publico/confirmacion.html', {'pedido': pedido})
+
+
+def rastrear_pedido(request):
+    form = RastrearPedidoForm(request.POST or None)
+    pedido = None
+    if request.method == 'POST' and form.is_valid():
+        pedido = Pedido.objects.filter(
+            pk=form.cleaned_data['numero_pedido'],
+            cliente__email__iexact=form.cleaned_data['email'],
+        ).select_related('cliente').prefetch_related('detalles__pizza').first()
+        if pedido is None:
+            form.add_error(None, 'No encontramos un pedido con ese número y correo.')
+    return render(request, 'publico/rastrear.html', {'form': form, 'pedido': pedido})
+
+
+def recomendaciones_menu(request):
+    """Devuelve sugerencias ML para las pizzas seleccionadas en el menú público."""
+    try:
+        pizzas_fuente = [int(value) for value in request.GET.getlist('pizza')]
+    except ValueError:
+        return JsonResponse({'detail': 'Los IDs de pizza deben ser números.'}, status=400)
+    if not pizzas_fuente:
+        return JsonResponse({'detail': 'Selecciona al menos una pizza.'}, status=400)
+
+    pizzas = list(Pizza.objects.prefetch_related('ingredientes').order_by('nombre', 'tamano'))
+    ids_validos = {pizza.pk for pizza in pizzas}
+    pizzas_fuente = [pizza_id for pizza_id in pizzas_fuente if pizza_id in ids_validos]
+    if not pizzas_fuente:
+        return JsonResponse({'detail': 'No se encontraron esas pizzas.'}, status=404)
+
+    popularidad = {
+        fila['pizza__nombre']: fila['total']
+        for fila in DetallePedido.objects.values('pizza__nombre').annotate(total=Sum('cantidad'))
+    }
+
+    recomendaciones = recomendar_pizzas(
+        pizzas,
+        pizzas_fuente=pizzas_fuente,
+        popularidad=popularidad,
+    )
+    return JsonResponse({
+        'motor': 'TF-IDF y similitud coseno (scikit-learn)',
+        'recomendaciones': recomendaciones,
+    })
 
 
 @staff_member_required

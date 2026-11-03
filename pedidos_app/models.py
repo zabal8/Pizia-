@@ -39,6 +39,12 @@ class Pizza(models.Model):
 
 
 class Pedido(models.Model):
+    METODOS_PAGO_PREFERIDOS = [
+        ('efectivo', 'Efectivo al recibir'),
+        ('tarjeta', 'Tarjeta al recibir'),
+        ('transferencia', 'Transferencia'),
+    ]
+
     ESTADOS = [
         ('recibido', 'Recibido'),
         ('preparando', 'En preparación'),
@@ -68,6 +74,12 @@ class Pedido(models.Model):
         max_length=20,
         choices=ESTADOS,
         default='recibido'
+    )
+
+    metodo_pago_preferido = models.CharField(
+        max_length=20,
+        choices=METODOS_PAGO_PREFERIDOS,
+        default='efectivo',
     )
 
     def __str__(self):

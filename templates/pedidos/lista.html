@@ -13,6 +13,7 @@
                 <th>Cliente</th>
                 <th>Pizzas</th>
                 <th>Total</th>
+                <th>Pago preferido</th>
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -25,6 +26,7 @@
                 <td>{{ pedido.cliente.nombre }}</td>
                 <td>{% for detalle in pedido.detalles.all %}{{ detalle.cantidad }} × {{ detalle.pizza.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}{{ pedido.pizza.nombre|default:'—' }}{% endfor %}</td>
                 <td>${{ pedido.total|floatformat:2 }}</td>
+                <td>{{ pedido.get_metodo_pago_preferido_display }}</td>
                 <td>{{ pedido.fecha|date:'d/m/Y H:i' }}</td>
                 <td>{{ pedido.get_estado_display }}</td>
                 <td>
@@ -33,7 +35,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7">No hay pedidos registrados.</td></tr>
+            <tr><td colspan="8">No hay pedidos registrados.</td></tr>
             {% endfor %}
         </tbody>
     </table>

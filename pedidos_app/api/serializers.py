@@ -57,7 +57,10 @@ class PedidoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ['id', 'cliente', 'pizza', 'pizza_ids', 'pizzas', 'total', 'fecha', 'estado']
+        fields = [
+            'id', 'cliente', 'pizza', 'pizza_ids', 'pizzas', 'total',
+            'fecha', 'estado', 'metodo_pago_preferido',
+        ]
         read_only_fields = ['id', 'fecha']
 
     def validate(self, attrs):

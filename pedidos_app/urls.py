@@ -3,28 +3,29 @@ from . import views
 
 urlpatterns = [
 
-    # CLIENTES
+    # Sitio publico para clientes.
+    path('', views.inicio, name='inicio'),
+    path('pedido/confirmado/', views.pedido_publico_confirmado, name='pedido_publico_confirmado'),
+    path('rastrear/', views.rastrear_pedido, name='rastrear_pedido'),
+    path('recomendaciones-menu/', views.recomendaciones_menu, name='recomendaciones_menu'),
+
+    # Gestion interna de clientes.
+    path('clientes/', views.lista_clientes, name='lista_clientes'),
 
     path(
-        '',
-        views.lista_clientes,
-        name='lista_clientes'
-    ),
-
-    path(
-        'nuevo/',
+        'clientes/nuevo/',
         views.crear_cliente,
         name='crear_cliente'
     ),
 
     path(
-        'editar/<int:pk>/',
+        'clientes/editar/<int:pk>/',
         views.editar_cliente,
         name='editar_cliente'
     ),
 
     path(
-        'eliminar/<int:pk>/',
+        'clientes/eliminar/<int:pk>/',
         views.eliminar_cliente,
         name='eliminar_cliente'
     ),

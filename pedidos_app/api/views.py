@@ -1,4 +1,5 @@
 from django.db.models.deletion import ProtectedError
+from django.db.models import Sum
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,7 +11,9 @@ from pedidos_app.models import (
     Pedido,
     Pizza,
     RecomendacionIA,
+    DetallePedido,
 )
+from pedidos_app.recomendador import recomendar_pizzas
 from .serializers import (
     ClienteSerializer,
     IngredienteSerializer,
@@ -67,31 +70,27 @@ class RecomendacionViewSet(ProtectedDeleteModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='sugerir')
     def sugerir(self, request):
-        """Recomendador local basado en historial; no envía datos a servicios externos."""
-        from collections import Counter
-        from pedidos_app.models import DetallePedido
-
+        """Recomendador ML TF-IDF personalizado con las compras del cliente."""
         cliente_id = request.query_params.get('cliente')
         if not cliente_id or not Cliente.objects.filter(pk=cliente_id).exists():
             return Response({'detail': 'Indica un cliente válido en ?cliente=ID.'}, status=400)
 
-        lineas = DetallePedido.objects.filter(pedido__cliente_id=cliente_id).select_related('pizza')
-        favoritos = Counter()
-        for linea in lineas:
-            favoritos.update(linea.pizza.ingredientes.values_list('id', flat=True))
-        populares = Counter(DetallePedido.objects.values_list('pizza_id', flat=True))
+        historial = list(DetallePedido.objects.filter(
+            pedido__cliente_id=cliente_id
+        ).select_related('pizza'))
+        pizzas_fuente = [linea.pizza_id for linea in historial for _ in range(linea.cantidad)]
+        populares = {
+            fila['pizza__nombre']: fila['total']
+            for fila in DetallePedido.objects.values('pizza__nombre').annotate(total=Sum('cantidad'))
+        }
         pizzas = list(Pizza.objects.prefetch_related('ingredientes').all())
-        puntuadas = []
-        for pizza in pizzas:
-            coincidencias = sum(favoritos.get(ing.id, 0) for ing in pizza.ingredientes.all())
-            puntuadas.append((pizza, coincidencias, populares.get(pizza.id, 0)))
-        puntuadas.sort(key=lambda item: (item[1], item[2], item[0].nombre), reverse=True)
+        recomendaciones = recomendar_pizzas(
+            pizzas,
+            pizzas_fuente=pizzas_fuente,
+            popularidad=populares,
+        )
         return Response({
-            'metodo': 'Recomendación local por ingredientes preferidos y popularidad; no usa un modelo generativo.',
-            'recomendaciones': [
-                {'pizza': pizza.id, 'nombre': pizza.nombre, 'precio': pizza.precio,
-                 'motivo': (f'Coincide con {coincidencias} preferencia(s) de ingredientes.'
-                            if coincidencias else 'Popularidad general del menú.')}
-                for pizza, coincidencias, _ in puntuadas[:3]
-            ],
+            'motor': 'TF-IDF y similitud coseno (scikit-learn)',
+            'personalizada': bool(pizzas_fuente),
+            'recomendaciones': recomendaciones,
         })

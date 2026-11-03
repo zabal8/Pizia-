@@ -5,10 +5,10 @@
 La arquitectura objetivo usa una sola aplicacion Django para las paginas HTML y la API REST. Django REST Framework publica operaciones JSON; Django ORM persiste los datos en PostgreSQL.
 
 ```text
-Navegador / cliente API
+Cliente en navegador / personal / cliente API
         |
         v
-Paginas Django y API REST (/api/v1/)
+Sitio publico y gestion Django, mas API REST (/api/v1/)
         |
         v
 Modelos y validaciones de pedidos_app
@@ -17,15 +17,17 @@ Modelos y validaciones de pedidos_app
 PostgreSQL
 ```
 
-El codigo Node/SQLite permanece temporalmente en `server.js` y `src/` como legado. No forma parte de la arquitectura objetivo y no debe iniciarse mientras `src/database/initDatabase.js` contenga instrucciones que eliminan tablas.
+El backend Node/SQLite antiguo fue retirado; Django/PostgreSQL es la implementación activa.
 
 ## Componentes
 
 - `pizia/settings.py`: configuracion Django, variables de entorno, PostgreSQL y permisos DRF.
 - `pedidos_app/models.py`: entidades y relaciones.
 - `pedidos_app/views.py`: flujos HTML.
+- `pedidos_app/recomendador.py`: modelo TF-IDF y ranking de similitud coseno para recomendaciones locales.
 - `pedidos_app/api/`: serializadores, viewsets y rutas REST.
-- `templates/`: paginas del sistema; `base.html` conserva la paleta y navegacion visual.
+- `templates/base_public.html` y `templates/publico/`: sitio público y captura de pedidos.
+- `templates/base.html`: interfaz interna de gestión.
 
 ## Rutas principales
 

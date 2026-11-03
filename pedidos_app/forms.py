@@ -2,6 +2,63 @@ from django import forms
 from .models import Cliente, DetallePedido, Ingrediente, Pago, Pedido, Pizza
 
 
+class PedidoPublicoForm(forms.Form):
+    nombre = forms.CharField(
+        max_length=100,
+        label='Tu nombre',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'name'}),
+    )
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'autocomplete': 'email'}),
+    )
+    pizzas = forms.ModelMultipleChoiceField(
+        queryset=Pizza.objects.none(),
+        required=True,
+        label='Elige tus pizzas',
+        error_messages={'required': 'Selecciona al menos una pizza.'},
+    )
+    metodo_pago_preferido = forms.ChoiceField(
+        label='Método de pago',
+        choices=Pedido.METODOS_PAGO_PREFERIDOS,
+        initial='efectivo',
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['pizzas'].queryset = Pizza.objects.prefetch_related(
+            'ingredientes'
+        ).order_by('nombre', 'tamano')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cantidades = {}
+        for pizza in cleaned_data.get('pizzas', []):
+            try:
+                cantidad = int(self.data.get(f'cantidad_{pizza.pk}', '1'))
+            except (TypeError, ValueError):
+                cantidad = 0
+            if not 1 <= cantidad <= 20:
+                self.add_error('pizzas', f'La cantidad de {pizza.nombre} debe estar entre 1 y 20.')
+            else:
+                cantidades[pizza.pk] = cantidad
+        cleaned_data['cantidades'] = cantidades
+        return cleaned_data
+
+
+class RastrearPedidoForm(forms.Form):
+    numero_pedido = forms.IntegerField(
+        label='Número de pedido',
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 104'}),
+    )
+    email = forms.EmailField(
+        label='Correo usado al pedir',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'autocomplete': 'email'}),
+    )
+
+
 class ClienteForm(forms.ModelForm):
 
     class Meta:

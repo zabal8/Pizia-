@@ -10,7 +10,7 @@ Apoyar la gestion de una pizzeria con registro de clientes, catalogo de pizzas e
 |---|---|---|
 | Administrador | Mantener clientes, pizzas, ingredientes y consultar la administracion. | Paginas web y panel Django disponibles. |
 | Personal de pizzeria | Registrar pedidos, actualizar su estado y registrar pagos. | Paginas web agregadas para pedidos y pagos. |
-| Cliente | Ser identificado como titular de un pedido. | El registro existe; no hay portal ni autenticacion de cliente. |
+| Cliente | Consultar el menu y enviar un pedido. | Portada publica con menu por tamaño y captura de pedidos; no requiere cuenta. |
 
 La API y las paginas de gestion requieren una cuenta marcada como personal (`is_staff`). Todavia no hay permisos diferenciados entre administrador y personal; ambos tienen los mismos accesos de gestion.
 
@@ -24,8 +24,9 @@ La API y las paginas de gestion requieren una cuenta marcada como personal (`is_
 | RF-04 | Crear pedidos asociados a un cliente y una o mas pizzas. | Implementado con detalles de pedido y totales calculados. |
 | RF-05 | Actualizar el estado del pedido. | Implementado: recibido, en preparacion, listo, entregado o cancelado. |
 | RF-06 | Registrar un pago por pedido. | Implementado; valida que el monto coincida con el total del pedido. |
-| RF-07 | Recomendar pizzas a un cliente. | API con recomendador local basado en ingredientes preferidos y popularidad. |
+| RF-07 | Recomendar pizzas a un cliente. | Página pública y API usan TF-IDF y similitud coseno sobre ingredientes e historial local. |
 | RF-08 | Proteger las operaciones de gestion. | API y paginas web requieren cuenta de personal; faltan permisos diferenciados por rol. |
+| RF-09 | Permitir al cliente elegir varias pizzas, tamaño y cantidades y enviar su pedido. | Implementado en la portada pública; los pedidos quedan recibidos y el pago en línea no está habilitado. |
 
 ## Requisitos no funcionales
 

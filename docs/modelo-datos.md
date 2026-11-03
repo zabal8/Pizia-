@@ -33,7 +33,7 @@ erDiagram
 - Los tamaños disponibles son pequeña, porción, mediana y grande; la migración `0007_cargar_menu_pizzas` carga las diez recetas del menú.
 - El campo `Pedido.pizza` se conserva temporalmente por compatibilidad y apunta a la primera pizza del pedido.
 - El formulario y la API de pago validan que el monto coincida con la suma de los detalles.
-- El recomendador compara ingredientes de compras previas y popularidad; no usa un modelo generativo.
+- El recomendador ajusta TF-IDF a las recetas y compara perfiles mediante similitud coseno; popularidad se usa para arranque en frío. No usa un modelo generativo ni envía datos al exterior.
 
 ## Evolucion recomendada
 

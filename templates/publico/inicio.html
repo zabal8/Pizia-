@@ -1,0 +1,261 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}PizIA — Pide tu pizza artesanal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hero{background:radial-gradient(ellipse at 90% 20%,#fce5f0 0,transparent 36%),linear-gradient(135deg,#fff 0%,#f4f7ff 100%);color:var(--ink);border-bottom:1px solid #e4eaf6;overflow:hidden;}
+    .hero-inner{padding:clamp(3.5rem,8vw,6.5rem) 0;}
+    .hero h1{font-size:clamp(2.5rem,6vw,4.4rem);font-weight:850;line-height:1.04;max-width:720px;}
+    .hero .lead{max-width:580px;color:#64748b;}
+    .hero-logo{width:min(100%,290px);filter:drop-shadow(0 15px 24px #061f5018);}
+    .hero h1{color:var(--blue-dark);}
+    .hero .badge{color:var(--blue-dark)!important;background:#fff!important;border:1px solid #e7edf8;}
+    .section-kicker{color:var(--pink-dark);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;}
+    .menu-card{height:100%;background:#fff;border:1px solid #e4eaf6;border-radius:20px;box-shadow:0 8px 22px #153d7810;}
+    .menu-card h3{color:var(--blue-dark);font-weight:800;}
+    .recipe{min-height:3.2em;color:#64748b;font-size:.92rem;}
+    .size-option{display:flex;align-items:center;gap:.55rem;padding:.55rem .65rem;border:1px solid #e4eaf6;border-radius:12px;transition:.15s ease;}
+    .size-option:hover{border-color:var(--pink);background:var(--pink-light);}
+    .size-option:has(input:checked){border-color:var(--blue);background:#edf4ff;box-shadow:inset 0 0 0 1px var(--blue);}
+    .size-choice{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0;cursor:pointer;}
+    .size-choice input{accent-color:var(--blue);width:1.1rem;height:1.1rem;}
+    .size-price{margin-left:auto;color:var(--blue-dark);font-weight:800;white-space:nowrap;}
+    .pizza-quantity{width:64px;flex:0 0 64px;padding:.35rem .45rem;border-color:#d6dfef;}
+    .order-panel{background:#fff;border:1px solid #e4eaf6;border-radius:22px;box-shadow:0 10px 28px #153d7812;}
+    .ai-card{height:100%;border:1px solid #f1c5da;border-radius:16px;background:#fff;}
+    .ai-tag{display:inline-block;border-radius:999px;background:#fff0f7;color:#b63878;padding:.25rem .65rem;font-size:.75rem;font-weight:800;}
+    .order-summary{background:var(--pink-light);border:1px solid #f6d6e5;border-radius:14px;}
+    .payment-option{display:block;height:100%;padding:1rem;border:1px solid #e4eaf6;border-radius:14px;cursor:pointer;background:#fff;}
+    .payment-option:has(input:checked){border-color:var(--blue);background:#f2f7ff;box-shadow:inset 0 0 0 1px var(--blue);}
+    .payment-option input{accent-color:var(--blue);}
+    .payment-option strong{display:block;color:var(--blue-dark);}
+    .payment-option small{display:block;color:#64748b;margin:.25rem 0 0 1.45rem;}
+    .form-label{font-weight:700;color:var(--blue-dark);}
+    .errorlist{list-style:none;padding:0;margin:.35rem 0 0;color:#b4235b;font-size:.9rem;}
+    @media(max-width:767px){.hero-logo{width:150px;margin:0 auto 2rem;}.hero-copy{text-align:center;}.recipe{min-height:0;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-md-8 hero-copy">
+                <div class="badge rounded-pill text-bg-light mb-3 px-3 py-2">🍕 Pizza artesanal</div>
+                <h1>Una pizza hecha para disfrutar.</h1>
+                <p class="lead mt-3 mb-4">Elige una receta, selecciona el tamaño y arma tu pedido. Hecha al momento con ingredientes deliciosos.</p>
+                <a class="btn btn-brand" href="#menu">Explorar el menú</a>
+            </div>
+            <div class="col-md-4 text-center d-none d-md-block">
+                <img class="hero-logo" src="{% static 'img/pizia-logo.png' %}" alt="PizIA, pizza artesanal">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container py-5" id="menu">
+    <div class="text-center mb-4">
+        <div class="section-kicker">Recién salida del horno</div>
+        <h2 class="display-6 fw-bold mt-2">Nuestro menú</h2>
+        <p class="text-secondary mb-0">Selecciona una o varias pizzas. Cada sabor está disponible en distintos tamaños.</p>
+    </div>
+
+    {% if pizzas %}
+    <form method="post" action="{% url 'inicio' %}#pedido" id="pedidoForm">
+        {% csrf_token %}
+        {% regroup pizzas by nombre as pizzas_por_sabor %}
+        <div class="row g-3 g-lg-4">
+            {% for grupo in pizzas_por_sabor %}
+            <div class="col-md-6 col-xl-4">
+                <article class="menu-card p-4">
+                    <h3 class="h4 mb-2">{{ grupo.grouper }}</h3>
+                    <p class="recipe mb-3">
+                        {% for ingrediente in grupo.list.0.ingredientes.all %}{{ ingrediente.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Pizza artesanal{% endfor %}
+                    </p>
+                    <div class="d-grid gap-2">
+                        {% for pizza in grupo.list %}
+                        <div class="size-option">
+                            <label class="size-choice" for="pizza-{{ pizza.pk }}">
+                                <input id="pizza-{{ pizza.pk }}" type="checkbox" name="pizzas" value="{{ pizza.pk }}" class="menu-choice" data-price="{{ pizza.precio }}" {% if pizza.pk|stringformat:'s' in selected_pizza_ids %}checked{% endif %}>
+                                <span>{{ pizza.get_tamano_display }}</span>
+                                <span class="size-price" data-cop="{{ pizza.precio }}">${{ pizza.precio|floatformat:0 }}</span>
+                            </label>
+                            <input type="number" class="form-control form-control-sm pizza-quantity" name="cantidad_{{ pizza.pk }}" min="1" max="20" value="1" aria-label="Cantidad de {{ pizza.nombre }} {{ pizza.get_tamano_display }}" disabled>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+
+        <section class="container d-none mt-5" id="aiRecommendations" aria-live="polite">
+            <div class="section-kicker">Recomendación inteligente</div>
+            <h2 class="h3 fw-bold mt-1">También podría gustarte</h2>
+            <p class="text-secondary" id="aiStatus">Analizando las recetas que elegiste…</p>
+            <div class="row g-3" id="aiCards"></div>
+        </section>
+
+        <div class="row justify-content-center mt-5" id="pedido">
+            <div class="col-lg-8 col-xl-7">
+                <section class="order-panel p-4 p-md-5">
+                    <div class="section-kicker">Un último paso</div>
+                    <h2 class="h3 fw-bold mt-1 mb-3">Completa tu pedido</h2>
+                    <p class="text-secondary">Déjanos tus datos y elige cómo prefieres pagar. El pedido se confirma con el equipo.</p>
+
+                    {% if form.pizzas.errors %}<div class="alert alert-danger">{{ form.pizzas.errors }}</div>{% endif %}
+                    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+                            {{ form.nombre }}{{ form.nombre.errors }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                            {{ form.email }}{{ form.email.errors }}
+                        </div>
+                    </div>
+
+                    <fieldset class="mb-4" id="pago">
+                        <legend class="form-label mb-2">¿Cómo prefieres pagar?</legend>
+                        <div class="row g-2">
+                            {% for value,label in form.metodo_pago_preferido.field.choices %}
+                            <div class="col-md-4">
+                                <label class="payment-option" for="id_metodo_pago_preferido_{{ forloop.counter0 }}">
+                                    <input type="radio" name="metodo_pago_preferido" value="{{ value }}" id="id_metodo_pago_preferido_{{ forloop.counter0 }}" {% if form.metodo_pago_preferido.value == value or not form.metodo_pago_preferido.value and value == 'efectivo' %}checked{% endif %}>
+                                    <strong>{{ label }}</strong>
+                                    <small>{% if value == 'efectivo' %}Pagas al recibir en casa.{% elif value == 'tarjeta' %}Pagas con tarjeta al recibir.{% else %}El equipo te comparte los datos para transferir.{% endif %}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.metodo_pago_preferido.errors %}<div class="text-danger small mt-2">{{ form.metodo_pago_preferido.errors }}</div>{% endif %}
+                        <p class="small text-secondary mt-2 mb-0">Por seguridad, no pedimos datos de tarjeta en esta página.</p>
+                    </fieldset>
+
+                    <div class="order-summary p-3 mb-4 d-flex justify-content-between align-items-center">
+                        <span><strong id="cantidadSeleccionada">0</strong> pizzas seleccionadas</span>
+                        <span class="fw-bold text-primary">Total: <span id="totalPedido">$0</span></span>
+                    </div>
+                    <button class="btn btn-blue w-100" type="submit">Enviar pedido</button>
+                    <p class="small text-secondary text-center mt-3 mb-0">Al enviar, podrás consultar el estado con tu número de pedido y correo.</p>
+                </section>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center">El menú se está preparando. Vuelve a visitarnos pronto.</div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (() => {
+        const choices = document.querySelectorAll('.menu-choice');
+        if (!choices.length) return;
+        const count = document.getElementById('cantidadSeleccionada');
+        const total = document.getElementById('totalPedido');
+        const aiPanel = document.getElementById('aiRecommendations');
+        const aiStatus = document.getElementById('aiStatus');
+        const aiCards = document.getElementById('aiCards');
+        let aiRequest = 0;
+        const money = new Intl.NumberFormat('es-CO', {
+            style: 'currency', currency: 'COP', maximumFractionDigits: 0
+        });
+        const refresh = () => {
+            const selected = [...choices].filter(choice => choice.checked);
+            const amount = selected.reduce((sum, choice) => {
+                const quantity = choice.closest('.size-option').querySelector('.pizza-quantity');
+                return sum + Number(choice.dataset.price) * Number(quantity.value || 1);
+            }, 0);
+            const units = selected.reduce((sum, choice) => {
+                const quantity = choice.closest('.size-option').querySelector('.pizza-quantity');
+                return sum + Number(quantity.value || 1);
+            }, 0);
+            count.textContent = units;
+            total.textContent = money.format(amount);
+        };
+        choices.forEach(choice => choice.addEventListener('change', () => {
+            const quantity = choice.closest('.size-option').querySelector('.pizza-quantity');
+            quantity.disabled = !choice.checked;
+            refresh();
+            refreshRecommendations();
+        }));
+        document.querySelectorAll('.pizza-quantity').forEach(quantity => quantity.addEventListener('input', refresh));
+        document.querySelectorAll('[data-cop]').forEach(price => {
+            price.textContent = money.format(Number(price.dataset.cop));
+        });
+        refresh();
+
+        async function refreshRecommendations() {
+            const selected = [...choices].filter(choice => choice.checked);
+            const requestId = ++aiRequest;
+            if (!selected.length) {
+                aiPanel.classList.add('d-none');
+                aiCards.replaceChildren();
+                return;
+            }
+            aiPanel.classList.remove('d-none');
+            aiStatus.textContent = 'La IA está comparando los ingredientes de tu selección…';
+            aiCards.replaceChildren();
+            const params = new URLSearchParams();
+            selected.forEach(choice => params.append('pizza', choice.value));
+
+            try {
+                const response = await fetch(`{% url 'recomendaciones_menu' %}?${params.toString()}`, {
+                    headers: {'Accept': 'application/json'}
+                });
+                const data = await response.json();
+                if (requestId !== aiRequest) return;
+                if (!response.ok) throw new Error(data.detail || 'No pudimos obtener recomendaciones.');
+                aiCards.replaceChildren();
+                if (!data.recomendaciones.length) {
+                    aiStatus.textContent = 'Ya tienes seleccionados todos los sabores disponibles.';
+                    return;
+                }
+                aiStatus.textContent = `Sugerencias calculadas con ${data.motor}.`;
+                data.recomendaciones.forEach(item => {
+                    const column = document.createElement('div');
+                    column.className = 'col-md-4';
+                    const card = document.createElement('article');
+                    card.className = 'ai-card p-3';
+                    const tag = document.createElement('span');
+                    tag.className = 'ai-tag';
+                    tag.textContent = `Similitud ${item.similitud}%`;
+                    const title = document.createElement('h3');
+                    title.className = 'h5 fw-bold text-primary mt-3';
+                    title.textContent = item.nombre;
+                    const size = document.createElement('p');
+                    size.className = 'small text-secondary mb-1';
+                    size.textContent = `${item.tamano} · ${money.format(Number(item.precio))}`;
+                    const reason = document.createElement('p');
+                    reason.className = 'small mb-3';
+                    reason.textContent = item.motivo;
+                    const add = document.createElement('button');
+                    add.type = 'button';
+                    add.className = 'btn btn-sm btn-outline-primary rounded-pill';
+                    add.textContent = 'Agregar al pedido';
+                    add.addEventListener('click', () => {
+                        const option = document.querySelector(`.menu-choice[value="${item.pizza}"]`);
+                        if (!option) return;
+                        option.checked = true;
+                        option.closest('.size-option').querySelector('.pizza-quantity').disabled = false;
+                        refresh();
+                        refreshRecommendations();
+                    });
+                    card.append(tag, title, size, reason, add);
+                    column.append(card);
+                    aiCards.append(column);
+                });
+            } catch (error) {
+                if (requestId !== aiRequest) return;
+                aiStatus.textContent = 'No pudimos cargar sugerencias ahora. Puedes seguir con tu pedido.';
+            }
+        }
+    })();
+</script>
+{% endblock %}

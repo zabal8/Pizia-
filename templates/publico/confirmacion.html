@@ -1,0 +1,37 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Pedido recibido — PizIA{% endblock %}
+
+{% block extra_head %}
+<style>
+    .confirmation{max-width:720px;margin:4rem auto;background:#fff;border:1px solid #e4eaf6;border-radius:24px;box-shadow:0 12px 32px #153d7812;}
+    .checkmark{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:#eaf2ff;color:#1453b8;font-size:2rem;margin:0 auto 1.25rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container px-3">
+    <section class="confirmation p-4 p-md-5 text-center">
+        <div class="checkmark" aria-hidden="true">✓</div>
+        <div class="section-kicker">Pedido registrado</div>
+        <h1 class="h2 fw-bold mt-2">¡Gracias, {{ pedido.cliente.nombre }}!</h1>
+        <p class="text-secondary">Tu pedido <strong>#{{ pedido.id }}</strong> quedó recibido.</p>
+
+        <div class="text-start border rounded-3 p-3 my-4">
+            {% for detalle in pedido.detalles.all %}
+            <div class="d-flex justify-content-between gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                <span>{{ detalle.cantidad }} × {{ detalle.pizza.nombre }} ({{ detalle.pizza.get_tamano_display }})</span>
+                <strong>${{ detalle.subtotal|floatformat:0 }}</strong>
+            </div>
+            {% endfor %}
+            <div class="d-flex justify-content-between pt-3 mt-2 border-top fw-bold">
+                <span>Total</span><span>${{ pedido.total|floatformat:0 }}</span>
+            </div>
+        </div>
+        <p class="mb-1">Método elegido: <strong>{{ pedido.get_metodo_pago_preferido_display }}</strong></p>
+        <p class="small text-secondary">No se realizó ningún cobro en línea. El equipo coordinará el pago según el método elegido.</p>
+        <a class="btn btn-blue mt-2" href="{% url 'rastrear_pedido' %}">Rastrear pedido</a>
+        <a class="btn btn-outline-primary rounded-pill mt-2" href="{% url 'inicio' %}#menu">Volver al menú</a>
+    </section>
+</div>
+{% endblock %}

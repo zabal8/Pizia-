@@ -1,0 +1,72 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}PizIA — Pizza artesanal{% endblock %}</title>
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root{
+            --blue:#1453b8;
+            --blue-dark:#0e3f91;
+            --pink:#f2a8ca;
+            --pink-dark:#d95796;
+            --pink-light:#fff0f7;
+            --ink:#20304b;
+            --page:#f4f7ff;
+        }
+        html{scroll-behavior:smooth;scroll-padding-top:86px;}
+        body{background:var(--page);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;}
+        h1,h2,h3,h4,.brand{font-family:Manrope,'DM Sans',sans-serif;}
+        .site-nav{background:rgba(255,255,255,.96);box-shadow:0 4px 22px #153d780c;border-bottom:1px solid #eaf0fa;backdrop-filter:blur(14px);}
+        .brand{display:flex;align-items:center;gap:.65rem;color:var(--blue-dark);text-decoration:none;font-size:1.35rem;font-weight:800;}
+        .brand-logo{width:48px;height:48px;object-fit:cover;object-position:center;border:2px solid var(--pink);border-radius:50%;background:#fff;padding:2px;}
+        .site-nav .nav-link{color:var(--ink);font-weight:700;}
+        .site-nav .nav-link:hover{color:var(--pink-dark);}
+        .btn-brand{background:var(--pink-dark);color:#fff;border:0;border-radius:999px;padding:.7rem 1.25rem;font-weight:700;}
+        .btn-brand:hover{background:var(--pink);color:var(--blue-dark);}
+        .btn-blue{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:.8rem 1.4rem;font-weight:700;}
+        .btn-blue:hover{background:var(--blue-dark);color:#fff;}
+        .site-footer{color:#64748b;border-top:1px solid #dce5f5;}
+        .form-control:focus{border-color:var(--pink-dark);box-shadow:0 0 0 .2rem #f2a8ca55;}
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light site-nav sticky-top">
+        <div class="container">
+            <a class="brand" href="{% url 'inicio' %}">
+                <img class="brand-logo" src="{% static 'img/pizia-logo.png' %}" alt="Logo PizIA">
+                <span>PizIA</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPublico" aria-controls="menuPublico" aria-expanded="false" aria-label="Abrir menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPublico">
+                <div class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                    <a class="nav-link" href="{% url 'inicio' %}#menu">Nuestro menú</a>
+                    <a class="nav-link" href="{% url 'inicio' %}#pago">Pagos</a>
+                    <a class="nav-link" href="{% url 'rastrear_pedido' %}">Rastrear pedido</a>
+                    <a class="btn btn-brand ms-lg-2" href="{% url 'inicio' %}#pedido">Pedir ahora</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer class="site-footer py-4 mt-5">
+        <div class="container d-flex flex-column flex-sm-row justify-content-between gap-2">
+            <span><strong>PizIA</strong> · Pizza artesanal</span>
+            <span>Preparada con cariño, recién hecha para ti 🍕</span>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -38,7 +38,9 @@ python manage.py runserver
 
 La API requiere autenticacion. Incluye recursos para clientes, ingredientes, pizzas, pedidos, pagos y recomendaciones.
 
-Las paginas de gestion requieren una cuenta de personal. Inicia sesion en `/admin/login/`; crea una cuenta con `python manage.py createsuperuser` si aun no tienes una.
+La pagina publica de clientes esta en `/`: muestra el menu, permite seleccionar sabor y tamaño, calcula el total y registra el pedido con nombre y correo. No requiere iniciar sesion. El pago se coordina fuera del sitio por ahora.
+
+Las paginas internas de clientes, pizzas, ingredientes, pedidos y pagos requieren una cuenta de personal. Inicia sesion en `/admin/login/`; crea una cuenta con `python manage.py createsuperuser` si aun no tienes una.
 
 Las pantallas de pedidos y pagos estan disponibles en `/pedidos/` y `/pagos/`. Cada pedido admite varias pizzas; el pago debe coincidir con la suma de sus detalles. Los pedidos historicos se convierten en lineas de detalle al aplicar la migracion.
 
@@ -46,7 +48,8 @@ Las pantallas de pedidos y pagos estan disponibles en `/pedidos/` y `/pagos/`. C
 
 - En `/pedidos/nuevo/`, selecciona una o varias pizzas. Cada seleccion agrega una unidad; el modelo `DetallePedido` tambien guarda cantidad y precio unitario historico.
 - La API acepta `pizza_ids: [1, 2]` al crear o actualizar pedidos y devuelve `pizzas` y `total`. Se conserva el campo `pizza` por compatibilidad con integraciones anteriores.
-- La recomendacion se consulta en `GET /api/v1/recomendaciones/sugerir/?cliente=ID`. Usa ingredientes de pedidos anteriores y popularidad del menu. Es un recomendador local basado en reglas, no un modelo generativo ni un servicio externo.
+- La pagina publica ofrece recomendaciones en `GET /recomendaciones-menu/?pizza=ID` cuando el cliente selecciona una pizza. La API personaliza en `GET /api/v1/recomendaciones/sugerir/?cliente=ID` usando el historial del cliente.
+- El recomendador ajusta TF-IDF sobre las recetas e identifica similitud coseno entre ingredientes con scikit-learn. Aprende del catálogo y del historial local; no envía datos personales a servicios externos. No es un chat ni un modelo generativo.
 - La migracion `0005_detallepedido_multi_pizza` conserva los pedidos existentes y crea una linea por pizza historica.
 - Las pizzas del menu se ofrecen en cuatro tamaños: pequeña (precio mediano - $5.000), porción (mediano - $7.000), mediana (precio base) y grande (base + $10.000).
 - La migracion `0006_pizza_tamano` agrega el tamaño y `0007_cargar_menu_pizzas` carga las diez recetas con sus ingredientes y precios. Ejecuta `python manage.py migrate` para actualizar la base.
