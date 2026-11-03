@@ -47,6 +47,20 @@ def inicio(request):
         form = PedidoPublicoForm()
 
     pizzas = form.fields['pizzas'].queryset
+    imagenes_menu = {
+        'margarita': 'margarita',
+        'pepperoni': 'pepperoni',
+        'capricciosa': 'capricciosa',
+        'mushroom': 'mushroom',
+        'marinara': 'marinara',
+        'seafood': 'seafood',
+        'hawaiana': 'hawaiana',
+        'vegetariana': 'vegetariana',
+        'mexicana': 'mexicana',
+        'carnes': 'carnes',
+    }
+    for pizza in pizzas:
+        pizza.imagen_static = f"img/pizzas/{imagenes_menu.get(pizza.nombre.casefold(), 'margarita')}.jpg"
     selected_pizza_ids = {
         str(pizza_id) for pizza_id in (form['pizzas'].value() or [])
     } if form.is_bound else set()

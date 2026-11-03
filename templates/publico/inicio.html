@@ -13,7 +13,10 @@
     .hero h1{color:var(--blue-dark);}
     .hero .badge{color:var(--blue-dark)!important;background:#fff!important;border:1px solid #e7edf8;}
     .section-kicker{color:var(--pink-dark);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;}
-    .menu-card{height:100%;background:#fff;border:1px solid #e4eaf6;border-radius:20px;box-shadow:0 8px 22px #153d7810;}
+    .menu-card{height:100%;background:#fff;border:1px solid #e4eaf6;border-radius:20px;box-shadow:0 8px 22px #153d7810;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease;}
+    .menu-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px #153d7818;}
+    .menu-photo{display:block;width:100%;height:210px;object-fit:cover;background:#edf2f9;}
+    .menu-content{padding:1.25rem;}
     .menu-card h3{color:var(--blue-dark);font-weight:800;}
     .recipe{min-height:3.2em;color:#64748b;font-size:.92rem;}
     .size-option{display:flex;align-items:center;gap:.55rem;padding:.55rem .65rem;border:1px solid #e4eaf6;border-radius:12px;transition:.15s ease;}
@@ -59,7 +62,7 @@
     <div class="text-center mb-4">
         <div class="section-kicker">Recién salida del horno</div>
         <h2 class="display-6 fw-bold mt-2">Nuestro menú</h2>
-        <p class="text-secondary mb-0">Selecciona una o varias pizzas. Cada sabor está disponible en distintos tamaños.</p>
+        <p class="text-secondary mb-0">Selecciona una o varias pizzas. Cada sabor está disponible en distintos tamaños. Fotografías ilustrativas.</p>
     </div>
 
     {% if pizzas %}
@@ -69,7 +72,9 @@
         <div class="row g-3 g-lg-4">
             {% for grupo in pizzas_por_sabor %}
             <div class="col-md-6 col-xl-4">
-                <article class="menu-card p-4">
+                <article class="menu-card">
+                    <img class="menu-photo" src="{% static grupo.list.0.imagen_static %}" alt="Pizza {{ grupo.grouper }} artesanal" loading="lazy" width="1000" height="700">
+                    <div class="menu-content">
                     <h3 class="h4 mb-2">{{ grupo.grouper }}</h3>
                     <p class="recipe mb-3">
                         {% for ingrediente in grupo.list.0.ingredientes.all %}{{ ingrediente.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}Pizza artesanal{% endfor %}
@@ -85,6 +90,7 @@
                             <input type="number" class="form-control form-control-sm pizza-quantity" name="cantidad_{{ pizza.pk }}" min="1" max="20" value="1" aria-label="Cantidad de {{ pizza.nombre }} {{ pizza.get_tamano_display }}" disabled>
                         </div>
                         {% endfor %}
+                    </div>
                     </div>
                 </article>
             </div>

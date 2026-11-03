@@ -24,30 +24,37 @@
         body{background:var(--page);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;}
         h1,h2,h3,h4,.brand{font-family:Manrope,'DM Sans',sans-serif;}
         .site-nav{background:rgba(255,255,255,.96);box-shadow:0 4px 22px #153d780c;border-bottom:1px solid #eaf0fa;backdrop-filter:blur(14px);}
+        .site-nav-inner{display:flex;align-items:center;gap:1rem;min-height:76px;}
         .brand{display:flex;align-items:center;gap:.65rem;color:var(--blue-dark);text-decoration:none;font-size:1.35rem;font-weight:800;}
         .brand-logo{width:48px;height:48px;object-fit:cover;object-position:center;border:2px solid var(--pink);border-radius:50%;background:#fff;padding:2px;}
         .site-nav .nav-link{color:var(--ink);font-weight:700;}
         .site-nav .nav-link:hover{color:var(--pink-dark);}
+        .site-nav .navbar-collapse{display:flex!important;flex:1 1 auto;justify-content:flex-end;}
+        .site-nav .navbar-nav{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;}
         .btn-brand{background:var(--pink-dark);color:#fff;border:0;border-radius:999px;padding:.7rem 1.25rem;font-weight:700;}
         .btn-brand:hover{background:var(--pink);color:var(--blue-dark);}
         .btn-blue{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:.8rem 1.4rem;font-weight:700;}
         .btn-blue:hover{background:var(--blue-dark);color:#fff;}
         .site-footer{color:#64748b;border-top:1px solid #dce5f5;}
         .form-control:focus{border-color:var(--pink-dark);box-shadow:0 0 0 .2rem #f2a8ca55;}
+        @media(max-width:991.98px){
+            .site-nav-inner{flex-wrap:wrap;padding-bottom:.6rem;}
+            .site-nav .navbar-collapse{flex:0 0 100%;justify-content:flex-start;}
+            .site-nav .navbar-nav{justify-content:flex-start;gap:.2rem!important;}
+            .site-nav .nav-link{padding:.55rem .7rem;}
+            .site-nav .btn-brand{margin:.25rem .5rem!important;}
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light site-nav sticky-top">
-        <div class="container">
+    <nav class="navbar navbar-light site-nav sticky-top" aria-label="Navegación principal">
+        <div class="container site-nav-inner">
             <a class="brand" href="{% url 'inicio' %}">
                 <img class="brand-logo" src="{% static 'img/pizia-logo.png' %}" alt="Logo PizIA">
                 <span>PizIA</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPublico" aria-controls="menuPublico" aria-expanded="false" aria-label="Abrir menú">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="menuPublico">
+            <div class="navbar-collapse" id="menuPublico">
                 <div class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
                     <a class="nav-link" href="{% url 'inicio' %}#menu">Nuestro menú</a>
                     <a class="nav-link" href="{% url 'inicio' %}#pago">Pagos</a>
