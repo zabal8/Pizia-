@@ -4,6 +4,8 @@
 
 <h2>Eliminar Cliente</h2>
 
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
 <p>
     ¿Está seguro de eliminar a
     <strong>{{ cliente.nombre }}</strong>?

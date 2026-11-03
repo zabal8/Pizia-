@@ -18,6 +18,7 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Tamaño</th>
             <th>Precio</th>
             <th>Acciones</th>
         </tr>
@@ -32,6 +33,7 @@
 
             <td>{{ pizza.id }}</td>
             <td>{{ pizza.nombre }}</td>
+            <td>{{ pizza.get_tamano_display }}</td>
             <td>${{ pizza.precio }}</td>
 
             <td>
@@ -53,7 +55,7 @@
     {% empty %}
 
         <tr>
-            <td colspan="4">
+            <td colspan="5">
                 No hay pizzas registradas.
             </td>
         </tr>

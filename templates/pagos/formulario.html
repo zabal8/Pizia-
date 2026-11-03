@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Registrar Pago</h2>
+<p class="text-muted">El monto debe ser igual al total de las pizzas del pedido. Cada pedido admite un solo pago.</p>
+<form method="post" class="col-lg-8">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar pago</button>
+    <a href="{% url 'lista_pagos' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

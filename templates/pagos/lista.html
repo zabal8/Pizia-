@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">💳 Gestión de Pagos</h2>
+
+<a href="{% url 'crear_pago' %}" class="btn btn-success mb-3">➕ Registrar Pago</a>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Pago</th>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Pizzas</th>
+                <th>Monto</th>
+                <th>Método</th>
+                <th>Fecha de pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.id }}</td>
+                <td>#{{ pago.pedido.id }}</td>
+                <td>{{ pago.pedido.cliente.nombre }}</td>
+                <td>{% for detalle in pago.pedido.detalles.all %}{{ detalle.cantidad }} × {{ detalle.pizza.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}{{ pago.pedido.pizza.nombre|default:'—' }}{% endfor %}</td>
+                <td>${{ pago.monto }}</td>
+                <td>{{ pago.metodo }}</td>
+                <td>{{ pago.fecha_pago|date:'d/m/Y H:i' }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">No hay pagos registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,20 +1,23 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models.deletion import ProtectedError
 
 from django.core.paginator import Paginator
 
-from .models import Cliente
-from .forms import ClienteForm
+from .models import Cliente, Ingrediente, Pago, Pedido, Pizza
+from .forms import ClienteForm, IngredienteForm, PagoForm, PedidoForm, PizzaForm
 
 
 def inicio(request):
     return redirect('lista_clientes')
 
 
+@staff_member_required
 def lista_clientes(request):
 
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.all().order_by('id')
 
     paginator = Paginator(clientes, 10)
 
@@ -31,6 +34,7 @@ def lista_clientes(request):
     )
 
 
+@staff_member_required
 def crear_cliente(request):
 
     if request.method == 'POST':
@@ -56,6 +60,7 @@ def crear_cliente(request):
     )
 
 
+@staff_member_required
 def editar_cliente(request, pk):
 
     cliente = get_object_or_404(
@@ -93,6 +98,7 @@ def editar_cliente(request, pk):
     )
 
 
+@staff_member_required
 def eliminar_cliente(request, pk):
 
     cliente = get_object_or_404(
@@ -101,8 +107,18 @@ def eliminar_cliente(request, pk):
     )
 
     if request.method == 'POST':
-
-        cliente.delete()
+        try:
+            cliente.delete()
+        except ProtectedError:
+            return render(
+                request,
+                'clientes/eliminar.html',
+                {
+                    'cliente': cliente,
+                    'error': 'No se puede eliminar porque tiene pedidos o recomendaciones asociadas.'
+                },
+                status=409,
+            )
 
         return redirect(
             'lista_clientes'
@@ -115,8 +131,7 @@ def eliminar_cliente(request, pk):
             'cliente': cliente
         }
     )
-from .models import Ingrediente
-from .forms import IngredienteForm
+@staff_member_required
 def lista_ingredientes(request):
 
     ingredientes = Ingrediente.objects.all()
@@ -130,6 +145,7 @@ def lista_ingredientes(request):
     )
 
 
+@staff_member_required
 def crear_ingrediente(request):
 
     if request.method == 'POST':
@@ -157,6 +173,7 @@ def crear_ingrediente(request):
     )
 
 
+@staff_member_required
 def editar_ingrediente(request, pk):
 
     ingrediente = get_object_or_404(
@@ -194,6 +211,7 @@ def editar_ingrediente(request, pk):
     )
 
 
+@staff_member_required
 def eliminar_ingrediente(request, pk):
 
     ingrediente = get_object_or_404(
@@ -216,8 +234,7 @@ def eliminar_ingrediente(request, pk):
             'ingrediente': ingrediente
         }
     )
-from .models import Pizza
-from .forms import PizzaForm
+@staff_member_required
 def lista_pizzas(request):
 
     pizzas = Pizza.objects.all()
@@ -231,6 +248,7 @@ def lista_pizzas(request):
     )
 
 
+@staff_member_required
 def crear_pizza(request):
 
     if request.method == 'POST':
@@ -258,6 +276,7 @@ def crear_pizza(request):
     )
 
 
+@staff_member_required
 def editar_pizza(request, pk):
 
     pizza = get_object_or_404(
@@ -295,6 +314,7 @@ def editar_pizza(request, pk):
     )
 
 
+@staff_member_required
 def eliminar_pizza(request, pk):
 
     pizza = get_object_or_404(
@@ -303,8 +323,18 @@ def eliminar_pizza(request, pk):
     )
 
     if request.method == 'POST':
-
-        pizza.delete()
+        try:
+            pizza.delete()
+        except ProtectedError:
+            return render(
+                request,
+                'pizzas/eliminar.html',
+                {
+                    'pizza': pizza,
+                    'error': 'No se puede eliminar porque tiene pedidos o recomendaciones asociadas.'
+                },
+                status=409,
+            )
 
         return redirect(
             'lista_pizzas'
@@ -317,3 +347,63 @@ def eliminar_pizza(request, pk):
             'pizza': pizza
         }
     )
+
+
+@staff_member_required
+def lista_pedidos(request):
+    pedidos = Pedido.objects.select_related('cliente', 'pizza').prefetch_related('detalles__pizza').order_by('-fecha')
+    return render(request, 'pedidos/lista.html', {'pedidos': pedidos})
+
+
+@staff_member_required
+def crear_pedido(request):
+    form = PedidoForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('lista_pedidos')
+    return render(request, 'pedidos/formulario.html', {'form': form})
+
+
+@staff_member_required
+def editar_pedido(request, pk):
+    pedido = get_object_or_404(Pedido, pk=pk)
+    form = PedidoForm(request.POST or None, instance=pedido)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('lista_pedidos')
+    return render(request, 'pedidos/formulario.html', {'form': form})
+
+
+@staff_member_required
+def eliminar_pedido(request, pk):
+    pedido = get_object_or_404(Pedido, pk=pk)
+    if request.method == 'POST':
+        try:
+            pedido.delete()
+        except ProtectedError:
+            return render(
+                request,
+                'pedidos/eliminar.html',
+                {
+                    'pedido': pedido,
+                    'error': 'No se puede eliminar un pedido que ya tiene un pago registrado.'
+                },
+                status=409,
+            )
+        return redirect('lista_pedidos')
+    return render(request, 'pedidos/eliminar.html', {'pedido': pedido})
+
+
+@staff_member_required
+def lista_pagos(request):
+    pagos = Pago.objects.select_related('pedido__cliente', 'pedido__pizza').prefetch_related('pedido__detalles__pizza')
+    return render(request, 'pagos/lista.html', {'pagos': pagos})
+
+
+@staff_member_required
+def crear_pago(request):
+    form = PagoForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('lista_pagos')
+    return render(request, 'pagos/formulario.html', {'form': form})

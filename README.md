@@ -38,6 +38,19 @@ python manage.py runserver
 
 La API requiere autenticacion. Incluye recursos para clientes, ingredientes, pizzas, pedidos, pagos y recomendaciones.
 
+Las paginas de gestion requieren una cuenta de personal. Inicia sesion en `/admin/login/`; crea una cuenta con `python manage.py createsuperuser` si aun no tienes una.
+
+Las pantallas de pedidos y pagos estan disponibles en `/pedidos/` y `/pagos/`. Cada pedido admite varias pizzas; el pago debe coincidir con la suma de sus detalles. Los pedidos historicos se convierten en lineas de detalle al aplicar la migracion.
+
+## Pedidos con varias pizzas y recomendaciones
+
+- En `/pedidos/nuevo/`, selecciona una o varias pizzas. Cada seleccion agrega una unidad; el modelo `DetallePedido` tambien guarda cantidad y precio unitario historico.
+- La API acepta `pizza_ids: [1, 2]` al crear o actualizar pedidos y devuelve `pizzas` y `total`. Se conserva el campo `pizza` por compatibilidad con integraciones anteriores.
+- La recomendacion se consulta en `GET /api/v1/recomendaciones/sugerir/?cliente=ID`. Usa ingredientes de pedidos anteriores y popularidad del menu. Es un recomendador local basado en reglas, no un modelo generativo ni un servicio externo.
+- La migracion `0005_detallepedido_multi_pizza` conserva los pedidos existentes y crea una linea por pizza historica.
+- Las pizzas del menu se ofrecen en cuatro tamaños: pequeña (precio mediano - $5.000), porción (mediano - $7.000), mediana (precio base) y grande (base + $10.000).
+- La migracion `0006_pizza_tamano` agrega el tamaño y `0007_cargar_menu_pizzas` carga las diez recetas con sus ingredientes y precios. Ejecuta `python manage.py migrate` para actualizar la base.
+
 ## Revisiones
 
 ```powershell
@@ -47,6 +60,6 @@ python manage.py test
 
 ## Estado del proyecto
 
-Django y PostgreSQL son la arquitectura objetivo. Los archivos del backend Node/SQLite siguen temporalmente en el repositorio como respaldo durante la migracion. No ejecutes su inicializador: actualmente elimina tablas al iniciar.
+Django y PostgreSQL son la arquitectura del proyecto. Se retiró el backend Node/SQLite obsoleto para dejar una sola implementación activa.
 
-Antes de la entrega, documenta en `docs/` los requisitos, el diseno, el modelo de datos, el plan y resultados de pruebas, y el despliegue.
+La carpeta `docs/` contiene el analisis inicial de requisitos, diseno, modelo de datos, plan de pruebas y guia de despliegue. Actualiza las evidencias y resultados con el equipo antes de la entrega.

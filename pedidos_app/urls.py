@@ -81,4 +81,11 @@ urlpatterns = [
         name='eliminar_pizza'
     ),
 
+    path('pedidos/', views.lista_pedidos, name='lista_pedidos'),
+    path('pedidos/nuevo/', views.crear_pedido, name='crear_pedido'),
+    path('pedidos/editar/<int:pk>/', views.editar_pedido, name='editar_pedido'),
+    path('pedidos/eliminar/<int:pk>/', views.eliminar_pedido, name='eliminar_pedido'),
+    path('pagos/', views.lista_pagos, name='lista_pagos'),
+    path('pagos/nuevo/', views.crear_pago, name='crear_pago'),
+
 ]
