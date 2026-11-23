@@ -65,6 +65,21 @@ python manage.py check
 python manage.py test
 ```
 
+## Publicar la aplicación
+
+`runserver` es solo para desarrollo local. Para poner PizIA en Internet, despliega el código y una base PostgreSQL administrada en un proveedor de hosting. La configuración de producción acepta `DATABASE_URL`, sirve los estáticos con WhiteNoise y ejecuta Django mediante Gunicorn.
+
+En Render, conecta este mismo repositorio y la rama `main`, crea un servicio web y una base Render PostgreSQL en la misma región, y configura:
+
+- Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+- Pre-deploy command: `python manage.py migrate`
+- Start command: `gunicorn pizia.wsgi:application --bind 0.0.0.0:$PORT --workers 2`
+- Variables de entorno: `DATABASE_URL` (URL interna de Render PostgreSQL), `SECRET_KEY` (valor secreto aleatorio), `DEBUG=False`.
+
+Render proporciona el hostname del servicio en `RENDER_EXTERNAL_HOSTNAME`; Django lo incorpora a `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`. Si agregas un dominio propio, añade su origen HTTPS a `CSRF_TRUSTED_ORIGINS` y su host a `ALLOWED_HOSTS`.
+
+Los servicios gratuitos de Render no permiten escalar instancias. El escalado manual requiere un plan de cómputo pagado y el autoescalado está disponible en espacios Pro o superiores. Selecciona el plan después de revisar el costo en el panel de Render. Consulta [la guía oficial para Django](https://render.com/docs/deploy-django) y [la guía de escalado](https://render.com/docs/scaling).
+
 ## Estado del proyecto
 
 Django y PostgreSQL son la arquitectura del proyecto. Se retiró el backend Node/SQLite obsoleto para dejar una sola implementación activa.
