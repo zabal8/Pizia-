@@ -129,6 +129,43 @@ class PiziaAPITests(TestCase):
         response = APIClient().get('/api/v1/clientes/')
         self.assertIn(response.status_code, (401, 403))
 
+    def test_menu_publico_no_requiere_autenticacion(self):
+        response = APIClient().get('/api/v1/pizzas/menu/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.pizza.id, [pizza['id'] for pizza in response.data])
+
+    def test_pedido_publico_usa_precio_del_catalogo(self):
+        response = APIClient().post(
+            '/api/v1/pedidos/publico/',
+            {
+                'nombre': 'Ana Pérez',
+                'email': 'ana@example.com',
+                'pizzas': [{'pizza_id': self.pizza.id, 'cantidad': 2}],
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 201)
+        pedido = Pedido.objects.get(cliente__email='ana@example.com')
+        detalle = pedido.detalles.get()
+        self.assertEqual(detalle.cantidad, 2)
+        self.assertEqual(detalle.precio_unitario, self.pizza.precio)
+        self.assertEqual(Decimal(str(response.data['total'])), Decimal('70000.00'))
+
+    def test_seguimiento_publico_exige_numero_y_correo_coincidentes(self):
+        pedido = Pedido.objects.create(cliente=self.cliente, pizza=self.pizza)
+        response = APIClient().get(
+            '/api/v1/pedidos/seguimiento/',
+            {'numero': pedido.id, 'email': self.cliente.email},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['id'], pedido.id)
+
+        response = APIClient().get(
+            '/api/v1/pedidos/seguimiento/',
+            {'numero': pedido.id, 'email': 'otra@example.com'},
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_api_requiere_usuario_de_personal(self):
         ordinary_user = get_user_model().objects.create_user(
             username='api-test-customer',

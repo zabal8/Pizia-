@@ -36,7 +36,11 @@ python manage.py runserver
 - Administracion: `http://127.0.0.1:8000/admin/`
 - Inicio de sesion para la API navegable: `http://127.0.0.1:8000/api-auth/login/`
 
-La API requiere autenticacion. Incluye recursos para clientes, ingredientes, pizzas, pedidos, pagos y recomendaciones.
+La API de gestion requiere autenticacion de personal. Incluye recursos para clientes, ingredientes, pizzas, pedidos, pagos y recomendaciones. El menú público y las operaciones de pedido y seguimiento están disponibles sin iniciar sesión:
+
+- `GET /api/v1/pizzas/menu/`: lista las pizzas del menú.
+- `POST /api/v1/pedidos/publico/`: crea un pedido. Ejemplo: `{"nombre":"Ana Pérez","email":"ana@example.com","pizzas":[{"pizza_id":1,"cantidad":2}],"metodo_pago_preferido":"efectivo"}`. El servidor toma los precios vigentes del catálogo.
+- `GET /api/v1/pedidos/seguimiento/?numero=1&email=ana%40example.com`: devuelve estado, líneas y total cuando el número y el correo coinciden.
 
 La pagina publica de clientes esta en `/`: muestra el menu, permite seleccionar sabor y tamaño, calcula el total y registra el pedido con nombre y correo. No requiere iniciar sesion. El pago se coordina fuera del sitio por ahora.
 

@@ -2,6 +2,7 @@ from django.db.models.deletion import ProtectedError
 from django.db.models import Sum
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from pedidos_app.models import (
@@ -19,8 +20,10 @@ from .serializers import (
     IngredienteSerializer,
     PagoSerializer,
     PedidoSerializer,
+    PedidoPublicoSerializer,
     PizzaSerializer,
     RecomendacionSerializer,
+    SeguimientoPedidoSerializer,
 )
 
 
@@ -51,10 +54,56 @@ class PizzaViewSet(ProtectedDeleteModelViewSet):
     queryset = Pizza.objects.prefetch_related('ingredientes').all()
     serializer_class = PizzaSerializer
 
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def menu(self, request):
+        pizzas = self.get_queryset().order_by('nombre', 'tamano')
+        return Response(self.get_serializer(pizzas, many=True).data)
+
 
 class PedidoViewSet(ProtectedDeleteModelViewSet):
     queryset = Pedido.objects.select_related('cliente', 'pizza').prefetch_related('detalles__pizza').all()
     serializer_class = PedidoSerializer
+
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='publico',
+        permission_classes=[AllowAny],
+    )
+    def crear_publico(self, request):
+        serializer = PedidoPublicoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        pedido = serializer.save()
+        return Response(
+            SeguimientoPedidoSerializer(pedido).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='seguimiento',
+        permission_classes=[AllowAny],
+    )
+    def seguimiento(self, request):
+        numero = request.query_params.get('numero')
+        email = request.query_params.get('email', '').strip()
+        if not numero or not numero.isdecimal() or not email:
+            return Response(
+                {'detail': 'Indica el número de pedido y el correo usado al comprar.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        pedido = self.get_queryset().filter(
+            pk=numero,
+            cliente__email__iexact=email,
+        ).first()
+        if pedido is None:
+            return Response(
+                {'detail': 'No encontramos un pedido con esos datos.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(SeguimientoPedidoSerializer(pedido).data)
 
 
 class PagoViewSet(ProtectedDeleteModelViewSet):
