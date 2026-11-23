@@ -25,6 +25,11 @@ class PedidoYPagoWebTests(TestCase):
             precio=Decimal('32000.00'),
         )
 
+    def test_precios_del_menu_se_entregan_como_numeros_compatibles_con_js(self):
+        response = self.client.get(reverse('inicio'))
+        self.assertContains(response, 'data-price="32000.00"')
+        self.assertContains(response, 'data-cop="32000.00"')
+
     def test_gestion_requiere_inicio_de_sesion_del_personal(self):
         self.client.logout()
         response = self.client.get(reverse('lista_pedidos'))

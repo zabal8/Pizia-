@@ -1,5 +1,5 @@
 {% extends 'base_public.html' %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}PizIA — Pide tu pizza artesanal{% endblock %}
 
@@ -83,9 +83,9 @@
                         {% for pizza in grupo.list %}
                         <div class="size-option">
                             <label class="size-choice" for="pizza-{{ pizza.pk }}">
-                                <input id="pizza-{{ pizza.pk }}" type="checkbox" name="pizzas" value="{{ pizza.pk }}" class="menu-choice" data-price="{{ pizza.precio }}" {% if pizza.pk|stringformat:'s' in selected_pizza_ids %}checked{% endif %}>
+                                <input id="pizza-{{ pizza.pk }}" type="checkbox" name="pizzas" value="{{ pizza.pk }}" class="menu-choice" data-price="{{ pizza.precio|unlocalize }}" {% if pizza.pk|stringformat:'s' in selected_pizza_ids %}checked{% endif %}>
                                 <span>{{ pizza.get_tamano_display }}</span>
-                                <span class="size-price" data-cop="{{ pizza.precio }}">${{ pizza.precio|floatformat:0 }}</span>
+                                <span class="size-price" data-cop="{{ pizza.precio|unlocalize }}">${{ pizza.precio|floatformat:0 }}</span>
                             </label>
                             <input type="number" class="form-control form-control-sm pizza-quantity" name="cantidad_{{ pizza.pk }}" min="1" max="20" value="1" aria-label="Cantidad de {{ pizza.nombre }} {{ pizza.get_tamano_display }}" disabled>
                         </div>
