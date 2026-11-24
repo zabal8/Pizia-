@@ -114,6 +114,9 @@
                     {% if form.pizzas.errors %}<div class="alert alert-danger">{{ form.pizzas.errors }}</div>{% endif %}
                     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
 
+                    {% if user.is_authenticated and not user.is_staff %}
+                    <div class="alert alert-info">Este pedido quedará registrado a nombre de <strong>{{ user.first_name|default:user.username }}</strong> ({{ user.email }}).</div>
+                    {% else %}
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
@@ -124,6 +127,7 @@
                             {{ form.email }}{{ form.email.errors }}
                         </div>
                     </div>
+                    {% endif %}
 
                     <fieldset class="mb-4" id="pago">
                         <legend class="form-label mb-2">¿Cómo prefieres pagar?</legend>

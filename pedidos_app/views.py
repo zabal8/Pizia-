@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model, login as auth_login
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models.deletion import ProtectedError
 from django.db.models import Sum
@@ -12,14 +13,19 @@ from django.core.paginator import Paginator
 from .models import Cliente, DetallePedido, Ingrediente, Pago, Pedido, Pizza
 from .forms import (
     ClienteForm, IngredienteForm, PagoForm, PedidoForm, PedidoPublicoForm,
-    PizzaForm, RastrearPedidoForm,
+    PizzaForm, RastrearPedidoForm, RegistroClienteForm,
 )
 from .recomendador import recomendar_pizzas
 
 
 def inicio(request):
+    cuenta_cliente = request.user.is_authenticated and not request.user.is_staff
     if request.method == 'POST':
-        form = PedidoPublicoForm(request.POST)
+        datos = request.POST.copy()
+        if cuenta_cliente:
+            datos['nombre'] = request.user.first_name or request.user.username
+            datos['email'] = request.user.email
+        form = PedidoPublicoForm(datos)
         if form.is_valid():
             seleccionadas = list(form.cleaned_data['pizzas'])
             with transaction.atomic():
@@ -27,6 +33,9 @@ def inicio(request):
                     email=form.cleaned_data['email'],
                     defaults={'nombre': form.cleaned_data['nombre']},
                 )
+                if cuenta_cliente and cliente.nombre != form.cleaned_data['nombre']:
+                    cliente.nombre = form.cleaned_data['nombre']
+                    cliente.save(update_fields=['nombre'])
                 pedido = Pedido.objects.create(
                     cliente=cliente,
                     pizza=seleccionadas[0],
@@ -44,7 +53,13 @@ def inicio(request):
             request.session['pedido_publico_id'] = pedido.pk
             return redirect('pedido_publico_confirmado')
     else:
-        form = PedidoPublicoForm()
+        datos_iniciales = {}
+        if cuenta_cliente:
+            datos_iniciales = {
+                'nombre': request.user.first_name or request.user.username,
+                'email': request.user.email,
+            }
+        form = PedidoPublicoForm(initial=datos_iniciales)
 
     pizzas = form.fields['pizzas'].queryset
     imagenes_menu = {
@@ -69,6 +84,33 @@ def inicio(request):
         'pizzas': pizzas,
         'selected_pizza_ids': selected_pizza_ids,
     })
+
+
+def registro_cliente(request):
+    if request.user.is_authenticated:
+        return redirect('inicio')
+    form = RegistroClienteForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        nombre = form.cleaned_data['nombre'].strip()
+        email = form.cleaned_data['email']
+        User = get_user_model()
+        with transaction.atomic():
+            usuario = User.objects.create_user(
+                username=email,
+                email=email,
+                first_name=nombre,
+                password=form.cleaned_data['password1'],
+            )
+            cliente, creado = Cliente.objects.get_or_create(
+                email=email,
+                defaults={'nombre': nombre},
+            )
+            if not creado and cliente.nombre != nombre:
+                cliente.nombre = nombre
+                cliente.save(update_fields=['nombre'])
+        auth_login(request, usuario, backend='django.contrib.auth.backends.ModelBackend')
+        return redirect('inicio')
+    return render(request, 'cuenta/registro.html', {'form': form})
 
 
 def pedido_publico_confirmado(request):

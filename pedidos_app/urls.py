@@ -1,5 +1,7 @@
-from django.urls import path
+from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import path, reverse_lazy
 from . import views
+from .forms import IngresoClienteForm
 
 urlpatterns = [
 
@@ -8,6 +10,22 @@ urlpatterns = [
     path('pedido/confirmado/', views.pedido_publico_confirmado, name='pedido_publico_confirmado'),
     path('rastrear/', views.rastrear_pedido, name='rastrear_pedido'),
     path('recomendaciones-menu/', views.recomendaciones_menu, name='recomendaciones_menu'),
+    path('cuenta/crear/', views.registro_cliente, name='registro_cliente'),
+    path(
+        'cuenta/ingresar/',
+        LoginView.as_view(
+            template_name='cuenta/iniciar_sesion.html',
+            authentication_form=IngresoClienteForm,
+            redirect_authenticated_user=True,
+            next_page=reverse_lazy('inicio'),
+        ),
+        name='ingresar_cliente',
+    ),
+    path(
+        'cuenta/salir/',
+        LogoutView.as_view(next_page=reverse_lazy('inicio')),
+        name='salir_cliente',
+    ),
 
     # Gestion interna de clientes.
     path('clientes/', views.lista_clientes, name='lista_clientes'),

@@ -60,7 +60,18 @@
                     <a class="nav-link" href="{% url 'inicio' %}#pago">Pagos</a>
                     <a class="nav-link" href="{% url 'rastrear_pedido' %}">Rastrear pedido</a>
                     <a class="btn btn-brand ms-lg-2" href="{% url 'inicio' %}#pedido">Pedir ahora</a>
-                    <a class="nav-link ms-lg-2" href="{% url 'admin:login' %}">Iniciar sesión</a>
+                    {% if user.is_authenticated and not user.is_staff %}
+                    <span class="nav-link">Hola, {{ user.first_name|default:user.email }}</span>
+                    <form method="post" action="{% url 'salir_cliente' %}" class="m-0">
+                        {% csrf_token %}
+                        <button class="nav-link border-0 bg-transparent" type="submit">Cerrar sesión</button>
+                    </form>
+                    {% elif user.is_authenticated and user.is_staff %}
+                    <a class="nav-link ms-lg-2" href="{% url 'admin:index' %}">Administración</a>
+                    {% else %}
+                    <a class="nav-link ms-lg-2" href="{% url 'ingresar_cliente' %}">Iniciar sesión</a>
+                    <a class="btn btn-outline-primary rounded-pill" href="{% url 'registro_cliente' %}">Crear cuenta</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

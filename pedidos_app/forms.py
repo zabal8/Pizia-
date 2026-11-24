@@ -1,4 +1,7 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.password_validation import validate_password
 from .models import Cliente, DetallePedido, Ingrediente, Pago, Pedido, Pizza
 
 
@@ -57,6 +60,74 @@ class RastrearPedidoForm(forms.Form):
         label='Correo usado al pedir',
         widget=forms.EmailInput(attrs={'class': 'form-control', 'autocomplete': 'email'}),
     )
+
+
+class IngresoClienteForm(AuthenticationForm):
+    username = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'autocomplete': 'email',
+            'autofocus': True,
+        }),
+    )
+
+    def clean_username(self):
+        return self.cleaned_data['username'].strip().lower()
+
+
+class RegistroClienteForm(forms.Form):
+    nombre = forms.CharField(
+        max_length=100,
+        label='Tu nombre',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'autocomplete': 'name',
+        }),
+    )
+    email = forms.EmailField(
+        max_length=150,
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'autocomplete': 'email',
+        }),
+    )
+    password1 = forms.CharField(
+        label='Contraseña',
+        help_text='Usa al menos 8 caracteres; evita contraseñas comunes o solo numéricas.',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'autocomplete': 'new-password',
+        }),
+    )
+    password2 = forms.CharField(
+        label='Confirma la contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'autocomplete': 'new-password',
+        }),
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().lower()
+        User = get_user_model()
+        if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username__iexact=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con este correo. Inicia sesión.')
+        return email
+
+    def clean_password1(self):
+        password = self.cleaned_data['password1']
+        validate_password(password)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            self.add_error('password2', 'Las contraseñas no coinciden.')
+        return cleaned_data
 
 
 class ClienteForm(forms.ModelForm):

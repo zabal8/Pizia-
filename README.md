@@ -10,7 +10,11 @@ Pide pizza artesanal en línea. Explora el menú, combina sabores y tamaños, y 
 4. Elige cómo prefieres pagar: efectivo al recibir, tarjeta al recibir o transferencia.
 5. Envía el pedido. La página mostrará el número, el detalle y el total para que puedas consultarlos.
 
-No necesitas crear una cuenta para pedir. La página no cobra en línea ni solicita datos de tarjeta; el equipo coordina el pago según la opción que elegiste. Las fotografías del menú son ilustrativas.
+Puedes pedir como invitado o crear una cuenta e iniciar sesión; con una cuenta, tus pedidos se registran con el nombre y el correo de tu perfil. La página no cobra en línea ni solicita datos de tarjeta; el equipo coordina el pago según la opción que elegiste. Las fotografías del menú son ilustrativas.
+
+## Cuenta de cliente
+
+Usa **Crear cuenta** para registrarte con tu nombre, correo electrónico y una contraseña. Después, inicia sesión con ese correo y contraseña. Desde la página podrás cerrar sesión cuando quieras. Las cuentas de cliente son distintas del acceso de administración de la pizzería.
 
 ## Recomendaciones
 
