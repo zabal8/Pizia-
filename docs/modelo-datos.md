@@ -30,11 +30,11 @@ erDiagram
 - El estado del pedido es recibido, en preparacion, listo, entregado o cancelado.
 - Cada pedido admite un solo pago.
 - Un pedido puede contener varias pizzas mediante `DetallePedido`; cada detalle guarda cantidad y precio unitario historico.
-- Los tamaños disponibles son pequeña, porción, mediana y grande; la migración `0007_cargar_menu_pizzas` carga las diez recetas del menú.
+- Los tamaños disponibles son pequeña, porción, mediana y grande. El servidor carga las diez recetas iniciales solo si todavía no hay pizzas.
 - El campo `Pedido.pizza` se conserva temporalmente por compatibilidad y apunta a la primera pizza del pedido.
 - El formulario y la API de pago validan que el monto coincida con la suma de los detalles.
 - El recomendador ajusta TF-IDF a las recetas y compara perfiles mediante similitud coseno; popularidad se usa para arranque en frío. No usa un modelo generativo ni envía datos al exterior.
 
 ## Evolucion recomendada
 
-La migracion `0005_detallepedido_multi_pizza` agrega los detalles y convierte automaticamente los pedidos anteriores. El campo legado `Pedido.pizza` puede retirarse mas adelante, cuando se confirme que no hay integraciones antiguas.
+El campo legado `Pedido.pizza` se conserva por compatibilidad con los registros existentes y apunta a la primera pizza del pedido.

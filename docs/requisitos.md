@@ -8,7 +8,7 @@ Apoyar la gestion de una pizzeria con registro de clientes, catalogo de pizzas e
 
 | Actor | Necesidad | Estado en la version actual |
 |---|---|---|
-| Administrador | Mantener clientes, pizzas, ingredientes y consultar la administracion. | Paginas web y panel Django disponibles. |
+| Administrador | Mantener clientes, pizzas, ingredientes y consultar la administración. | Páginas React y panel interno protegidos por sesión de personal. |
 | Personal de pizzeria | Registrar pedidos, actualizar su estado y registrar pagos. | Paginas web agregadas para pedidos y pagos. |
 | Cliente | Consultar el menu y enviar un pedido. | Portada publica con menu por tamaño y captura de pedidos; no requiere cuenta. |
 

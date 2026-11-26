@@ -1,23 +1,20 @@
-# Estándar de Codificación PIZIA
+# Estándar de codificación PizIA
 
-## Lenguaje y framework
+## Lenguaje y arquitectura
 
-El backend utiliza Python, Django y Django REST Framework. PostgreSQL es la base de datos principal.
+- React y Vite para la interfaz; Node.js y Express para el servidor y la API.
+- PostgreSQL es la base de datos principal. Usa consultas parametrizadas y transacciones en cambios relacionados.
+- Mantén los componentes React en `src/` y los servicios del servidor en `server/`.
 
-## Nomenclatura y estilo
+## Validación y seguridad
 
-- Usa nombres descriptivos en `snake_case` para variables y funciones, y `PascalCase` para clases.
-- Sigue PEP 8 y las convenciones de Django.
-- Mantén las validaciones de entrada en formularios o serializers; deja la lógica de negocio en funciones y servicios acotados.
-- Separa modelos, vistas, serializers y rutas por aplicación y módulo.
-- Usa transacciones para operaciones que guardan varias entidades relacionadas.
-- Devuelve errores claros y códigos HTTP adecuados desde la API.
-- Guarda secretos y configuración específica del entorno en variables de entorno; no subas archivos `.env`.
+- Valida los datos recibidos en el servidor. Nunca confíes en el precio enviado por el navegador: obtén el precio desde el catálogo y conserva el precio unitario histórico en el detalle del pedido.
+- Protege las rutas de gestión y API con autenticación de personal.
+- Guarda secretos en variables de entorno; no subas `.env`.
+- Devuelve mensajes y códigos HTTP adecuados, sin filtrar errores internos al cliente.
 
-## Persistencia
+## Persistencia y compatibilidad
 
-Los datos se almacenan en PostgreSQL. Los cambios del esquema deben incluir migraciones de Django. No guardes precios enviados por el cliente como fuente de verdad: calcula los importes con datos del catálogo del servidor y persiste el precio unitario histórico en cada detalle del pedido.
-
-## Mantenibilidad
-
-Cada función debe tener una responsabilidad clara. Evita duplicación, lógica excesivamente extensa y comentarios que repiten literalmente el código. Añade pruebas para cambios de comportamiento y validaciones cuando se solicite verificar la implementación.
+- Conserva las tablas actuales de PostgreSQL para que la migración no descarte los datos del sitio.
+- Los cambios de esquema deben ser aditivos e idempotentes; no borres ni reinicies datos existentes.
+- Usa transacciones para operaciones que escriben varias entidades.

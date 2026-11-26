@@ -1,33 +1,15 @@
 # Despliegue
 
-## Configuracion
+Configura una plataforma que ejecute Node.js 20 o superior y pueda conectarse a PostgreSQL. Mantén las credenciales fuera del repositorio.
 
-El despliegue requiere una plataforma que ejecute Django y una base PostgreSQL accesible desde la aplicacion. Mantener los valores secretos como variables de entorno; nunca subir `.env`.
+Define `DATABASE_URL` (o `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` y `DB_PORT`), `SESSION_SECRET`, `NODE_ENV=production` y el `PORT` que indique la plataforma. Usa `DATABASE_SSL=true` si el servidor PostgreSQL requiere SSL. En producción, las cookies usan HTTPS.
 
-Variables requeridas:
+Comandos de build y arranque:
 
-```text
-SECRET_KEY
-DEBUG=False
-ALLOWED_HOSTS
-DB_NAME
-DB_USER
-DB_PASSWORD
-DB_HOST
-DB_PORT
+```sh
+npm install
+npm run build
+npm start
 ```
 
-## Preparacion
-
-```powershell
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py check --deploy
-```
-
-Configurar HTTPS, `ALLOWED_HOSTS`, una clave secreta nueva y un servidor WSGI/ASGI adecuado a la plataforma elegida. No desplegar con el servidor de desarrollo `runserver`.
-
-## Estado
-
-Plataforma y URL de produccion: pendientes de elegir. Registrar aqui la URL, fecha, version desplegada, pasos de despliegue y evidencia de una operacion funcional una vez realizada.
+El proceso Node prepara el esquema con operaciones aditivas, sirve la API y publica el build de React. La plataforma y la URL de producción siguen pendientes de definir.

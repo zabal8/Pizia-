@@ -1,42 +1,18 @@
-# Plan de pruebas
+# Plan de comprobación
 
-## Como ejecutar
+## Build de la aplicación
 
-Con el entorno virtual activo y PostgreSQL iniciado:
-
-```powershell
-python manage.py check
-python manage.py test
+```sh
+npm install
+npm run build
 ```
 
-Django crea una base de datos de pruebas separada. El usuario PostgreSQL configurado debe tener permiso para crearla.
+## Recorridos manuales
 
-## Casos automatizados
+- Abrir el menú y comprobar selección, cantidades, total y sugerencias.
+- Enviar un pedido como invitado; confirmar su detalle y rastrearlo con número y correo.
+- Crear cuenta de cliente, volver a iniciar sesión y consultar sus pedidos.
+- Iniciar sesión con una cuenta de personal y revisar altas, cambios y eliminaciones de clientes, ingredientes, pizzas, pedidos y pagos.
+- Comprobar que la API de gestión rechaza sesiones que no sean del personal.
 
-| ID | Caso | Resultado esperado |
-|---|---|---|
-| WEB-01 | Crear pedido desde formulario. | Redirecciona a la lista y guarda estado recibido. |
-| WEB-02 | Cambiar estado del pedido. | Guarda el nuevo estado. |
-| WEB-03 | Registrar pago con monto incorrecto. | Muestra validacion y no crea pago. |
-| WEB-04 | Registrar pago con monto correcto. | Guarda un pago. |
-| API-01 | Consultar API sin autenticacion. | Rechaza la solicitud. |
-| API-02 | Crear cliente por API. | Responde 201 y persiste el cliente. |
-| API-03 | Crear pizza con ingredientes por API. | Responde 201 y guarda la relacion. |
-| API-04 | Actualizar estado de pedido por API. | Responde 200 y conserva el estado. |
-| API-05 | Crear pago con monto incorrecto. | Responde 400 y no persiste el pago. |
-| API-06 | Crear recomendacion por API. | Responde 201 y persiste el registro. |
-
-## Resultados
-
-Completar esta tabla despues de ejecutar las pruebas; no registrar resultados que no se hayan observado.
-
-| Ejecucion | Fecha | Resultado | Evidencia |
-|---|---|---|---|
-| Pendiente | — | Pendiente de ejecucion en la maquina del equipo. | Guardar salida de terminal en Drive. |
-
-## Pruebas manuales pendientes
-
-- Probar la navegacion y formularios de clientes, pizzas, ingredientes, pedidos y pagos.
-- Verificar que un pedido no acepte dos pagos.
-- Probar IDs inexistentes y errores de validacion en la API.
-- Verificar permisos de los roles antes del despliegue.
+Usa una base de datos de desarrollo antes de ejecutar recorridos que escriban datos.
