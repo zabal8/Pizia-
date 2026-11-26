@@ -1,37 +1,32 @@
-# Diseno del sistema PizIA
+# Diseño del sistema PizIA
 
 ## Arquitectura
 
-La arquitectura objetivo usa una sola aplicacion Django para las paginas HTML y la API REST. Django REST Framework publica operaciones JSON; Django ORM persiste los datos en PostgreSQL.
+React y Vite entregan la experiencia pública y el panel de gestión. Express sirve la API JSON y el build web; PostgreSQL conserva los datos del negocio.
 
 ```text
-Cliente en navegador / personal / cliente API
-        |
-        v
-Sitio publico y gestion Django, mas API REST (/api/v1/)
-        |
-        v
-Modelos y validaciones de pedidos_app
-        |
-        v
-PostgreSQL
+Navegador React
+      |
+      v
+API Node.js / Express (/api/v1/ y /auth)
+      |
+      v
+PostgreSQL (tablas existentes de PizIA)
 ```
-
-El backend Node/SQLite antiguo fue retirado; Django/PostgreSQL es la implementación activa.
 
 ## Componentes
 
-- `pizia/settings.py`: configuracion Django, variables de entorno, PostgreSQL y permisos DRF.
-- `pedidos_app/models.py`: entidades y relaciones.
-- `pedidos_app/views.py`: flujos HTML.
-- `pedidos_app/recomendador.py`: modelo TF-IDF y ranking de similitud coseno para recomendaciones locales.
-- `pedidos_app/api/`: serializadores, viewsets y rutas REST.
-- `templates/base_public.html` y `templates/publico/`: sitio público y captura de pedidos.
-- `templates/base.html`: interfaz interna de gestión.
+- `src/App.jsx`: navegación, compra, rastreo, cuentas y gestión interna.
+- `src/styles.css`: estilos compartidos del sitio y panel.
+- `server/index.js`: API, rutas de autenticación y estáticos.
+- `server/db.js`: conexión y transacciones PostgreSQL.
+- `server/schema.js`: inicialización aditiva del esquema y menú de arranque.
+- `server/auth.js`: cookies de sesión y compatibilidad con hashes de contraseña de cuentas existentes.
+- `server/recommend.js`: recomendaciones locales por similitud de recetas.
 
 ## Rutas principales
 
-| Recurso | Coleccion | Elemento |
+| Recurso | Colección | Elemento |
 |---|---|---|
 | Clientes | `/api/v1/clientes/` | `/api/v1/clientes/{id}/` |
 | Ingredientes | `/api/v1/ingredientes/` | `/api/v1/ingredientes/{id}/` |
@@ -40,4 +35,4 @@ El backend Node/SQLite antiguo fue retirado; Django/PostgreSQL es la implementac
 | Pagos | `/api/v1/pagos/` | `/api/v1/pagos/{id}/` |
 | Recomendaciones | `/api/v1/recomendaciones/` | `/api/v1/recomendaciones/{id}/` |
 
-La API usa sesiones y autenticacion basica de DRF con permiso `IsAdminUser`. Las paginas de gestion usan `staff_member_required` y envian a `/admin/login/`. Administradores y personal comparten permisos; separar capacidades por grupos sigue pendiente.
+Las rutas de gestión requieren una sesión de una cuenta con `is_staff` activa. El inicio de sesión verifica los hashes existentes de `auth_user`; la sesión se transporta en una cookie firmada y HTTP-only.
